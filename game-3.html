@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+	<style>
+		* { box-sizing: border-box; margin: 0; padding: 0; }
+		html, body { margin: 0; padding: 0; }
+		html { padding: 100px 0; }
+		html, input { font: 300 94px "Avenir Next", sans-serif; }
+		form.hidden { display: none; }
+		input { display: block; width: 100%; margin: 0 0 -20px 0; padding: 0; border: none; outline: none; text-align: center; }
+		hr { border: none; border-bottom: 1px solid #999; }
+		#boxes { text-align: center; line-height: 0; }
+		#boxes .wrapper { z-index: 1; }
+		#boxes + hr { z-index: 2; position: relative; }
+		#boxes .wrapper { position: relative; display: inline-block; width: 80px; height: 80px; }
+		#boxes .wrapper + .wrapper { margin-left: 10px; }
+		#boxes .wrapper .letter { position: absolute; bottom: 0; left: 0; width: 100%; color: white; font-weight: 300; line-height: 80px; visibility: hidden; }
+		#boxes .wrapper.clicked .letter { visibility: visible; }
+		#boxes .wrapper.ascender, #boxes .wrapper.descender { height: calc(80px + 25px);  }
+		#boxes .wrapper.descender { position: relative; bottom: -25px; }
+		#boxes .wrapper.descender .letter { bottom: 25px; }
+		#letters { width: calc(80px * 5); margin: 100px auto; text-align: center; }
+		#letters .letter { width: 80px; display: inline-block; }
+	</style>
+	<head>
+	</head>
+	<body>
+		<form><input autofocus></form>
+		<div id="boxes"></div>
+		<hr>
+		<div id="letters">
+		</div>
+		<script>
+			document.querySelector("form").addEventListener("submit", function(e) {
+				this.classList.add("hidden");
+				e.preventDefault();
+				startGame(this.querySelector("input").value);
+			}, false);
+
+			function startGame(word) {
+				var letters = word.split('');
+				letters.forEach(createBox);
+				generateLetterSet(word, 15).forEach(createLetter);
+			}
+
+			function createBox(letter) {
+				var outer = document.createElement("span");
+				outer.classList.add("wrapper");
+				if (isAscender(letter)) outer.classList.add("ascender");
+				if (isDescender(letter)) outer.classList.add("descender");
+				outer.style.backgroundColor = pickColor(letter);
+
+				var inner = document.createElement("span");
+				inner.classList.add("letter");
+				inner.innerText = letter;
+				outer.appendChild(inner);
+
+				outer.addEventListener("click", clickLetter, false);
+				document.querySelector("#boxes").appendChild(outer);
+			}
+
+			function createLetter(letter) {
+				var elem = document.createElement("span");
+				elem.innerText = letter;
+				elem.classList.add("letter");
+				document.querySelector('#letters').appendChild(elem);
+			}
+
+			function letterDragStart(e) {
+				console.log(e);
+			}
+
+			var colors = [
+						"#7ef083", "#4cd3ff", "#ffe742", "#df89fb", "#fa6aa0", "#ff8c40", "#7383fa", "#9640b2", "#f74f4f", "#4067e6", "#63f2f2", "#e3f73b"
+					].sort(function(e) { return Math.random() - .5; }),
+					colorPicks = {};
+			function pickColor(letter) {
+				if (colorPicks[letter])
+					return colorPicks[letter];
+				else if (colors.length)
+					return (colorPicks[letter] = colors.pop());
+				else
+					throw new Error("Ran out of colours :(");
+			}
+
+			function isDescender(string) {
+				return stringContains("qypgj", string);
+			}
+			function isAscender(string) {
+				return stringContains("btfdhkl", string);
+			}
+			function stringContains(string, substring) {
+				return string.indexOf(substring) != -1;
+			}
+
+			function clickLetter(e) {
+				e.preventDefault();
+				this.classList.add("clicked");
+			}
+
+			function generateLetterSet(word, count) {
+				var wordLetters = uniqueLetters(word),
+						letters = "abcdefghijklmnopqrstuvwxyz".split('').filter(function(letter) {
+							return wordLetters.indexOf(letter) == -1;
+						}),
+						randomLetters = letters.sort(function() { return Math.random() - .5; }),
+						letterSet = wordLetters.concat(randomLetters.splice(0, count - wordLetters.length));
+				return letterSet.sort(function() { return Math.random() - .5; });
+			}
+
+			function uniqueLetters(string) {
+				var s = "",
+				    letters = string.split('');
+				for (var i = 0; i < letters.length; i++) {
+					if (!stringContains(s, letters[i])) s += letters[i];
+				}
+				return s.split('');
+			}
+		</script>
+	</body>
+</html>

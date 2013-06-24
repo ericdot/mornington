@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			html { font: 18px sans-serif; }
+			h2 { color: #999; }
+			.letters span { display: inline-block; margin-right: 5px; font: bold 32px "Andale Mono"; text-transform: uppercase; }
+			#hand .letters span { font-size: 56px; margin-right: 10px; }
+		</style>
+	</head>
+	<body>
+		<button>Gimme letters</button>
+		<div id="hand">
+			<h2>Your turn</h2>
+			<div class="letters"></div>
+		</div>
+		<div id="pool">
+			<h2>Pool</h2>
+			<div class="letters"></div>
+		</div>
+		<div id="player-a" class="player">
+			<h2>Player A Setup</h2>
+			<div class="letters"></div>
+		</div>
+		<div id="player-b" class="player">
+			<h2>Player B Setup</h2>
+			<div class="letters"></div>
+		</div>
+		<script>
+			var handCount = 15,
+			    playerPoolCount = 10;
+
+	    setupPlayer('player-a');
+	    setupPlayer('player-b');
+			addToPool(generateLetterSet());
+			chooseHand();
+
+			document.querySelector("button").onclick = function() {
+				var button = this;
+				button.disabled = true;
+				button.blur();
+				chooseHand();
+				setTimeout(function() { button.disabled = false; }, 750);
+			}
+
+			document.addEventListener("keydown", function(e) {
+				if (e.keyIdentifier == "Enter") chooseHand();
+			}, false);
+
+			function generateLetterSet() {
+				var instances = {
+					1:  ["k", "j", "x", "q", "z"],
+					2:  ["b", "c", "m", "p", "f", "h", "v", "w", "y"],
+					3:  ["g"],
+					4:  ["l", "s", "u", "d"],
+					6:  ["n", "r", "t"],
+					8:  ["o"],
+					9:  ["a", "i"],
+					12: ["e"]
+				};
+				var letters = [];
+				for (var count in instances) {
+					for (var i = 0; i < count; i++) {
+						letters = letters.concat(instances[count]);
+					}
+				}
+				return letters.sort(function() {
+					return Math.random() - .5;
+				});
+			}
+
+			function addToPool(letters) {
+				letters.forEach(function(letter) {
+					var e = document.createElement("span");
+					e.innerText = letter;
+					document.querySelector("#pool .letters").appendChild(e);
+				});
+			}
+
+			function chooseHand() {
+				var letters = document.querySelector("#hand .letters");
+				letters.innerHTML = "";
+
+				for (var i = 0; i < handCount; i++) {
+					var letter = document.querySelector("#pool .letters span");
+					if (!letter) {
+						// If we ran out of letters, repopulate the pool, try again
+						addToPool(generateLetterSet());
+						i--;
+					} else {
+						letters.appendChild(letter);
+					}
+				}
+			}
+
+			function setupPlayer(id) {
+				generateLetterSet().slice(0,playerPoolCount).forEach(function(letter) {
+					var e = document.createElement("span");
+					e.innerText = letter;
+					document.getElementById(id).querySelector('.letters').appendChild(e);
+				});
+			}
+		</script>
+	</body>
+</html>
